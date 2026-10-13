@@ -85,7 +85,16 @@ MODEL=claude-haiku-5-5
 The `.gitignore` file already keeps `.env` out of Git, so your key never gets uploaded. **Never remove `.env` from `.gitignore`.**
 
 ---
+### Which branch should I use?
 
+- **`starter`**: start here. `agent.py` has five TODOs for you to fill in, and `pytest -v` shows what's left. You're done when it says `7 passed`.
+- **`main`**: the finished solution. Compare with it when you're stuck, but try the TODOs first.
+
+To switch to the starter version after cloning:
+
+    git switch starter
+
+In Codespaces, pick the `starter` branch when you create the codespace.
 ## Windows Gotchas
 
 Every one of these happened for real while building this lab. If you're on Windows, read this list before you start. It will save you an hour.
