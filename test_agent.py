@@ -72,9 +72,10 @@ def test_denied_refund_does_not_change_order():
 def test_denial_is_reported_back_to_claude():
     fake = FakeClient(refund_script())
     agent.run_agent("Refund B200", client=fake, approve=always_no)
-    result_sent = fake.calls[2]["messages"][-1]["content"][0]
-    assert result_sent["tool_use_id"] == "t2"
-    assert result_sent.get("is_error") is True
+    results_sent = fake.calls[2]["messages"][-1]["content"]
+    assert len(results_sent) == 1  # exactly one result per tool request
+    assert results_sent[0]["tool_use_id"] == "t2"
+    assert results_sent[0].get("is_error") is True
 
 def test_approved_refund_changes_order():
     fake = FakeClient(refund_script())
