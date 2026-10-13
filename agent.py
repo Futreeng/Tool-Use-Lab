@@ -2,7 +2,6 @@ import os
 import sys
 import json
 from dotenv import load_dotenv
-import anthropic
 
 DEFAULT_MODEL = "claude-haiku-5-5"
 
@@ -68,6 +67,7 @@ def ask_human(name, tool_input):
     return answer.strip().lower() == "y"
 
 def make_client():
+    import anthropic
     load_dotenv()
     if not os.getenv("ANTHROPIC_API_KEY"):
         sys.exit("No API key found. Did you create the .env file? See Step 1c.")
@@ -112,8 +112,8 @@ def run_agent(question, client, approve, model=DEFAULT_MODEL, max_turns=MAX_TURN
             if block.name in REQUIRES_APPROVAL and not approve(block.name, block.input):
                 tool_results.append({
                     "type": "tool_result", "tool_use_id": block.id,
-                    "content": "The user denied this action.", "is_error": True,
-                })
+                    "content": "A human reviewer declined this action. It was not performed. "
+                    "Do not retry it; explain to the customer that it needs review.", "is_error": True,                })
                 continue
 
             result = TOOL_FUNCTIONS[block.name](**block.input)
