@@ -85,14 +85,12 @@ def run_agent(question, client, approve, model=DEFAULT_MODEL, max_turns=MAX_TURN
             model=model, max_tokens=500, tools=TOOLS, messages=messages
         )
 
-        # Claude is done: return its final answer
-        if response.stop_reason != "tool_use":
-            final_text = "\n".join(b.text for b in response.content if b.type == "text")
-            print(final_text)
-            return final_text
+        # TODO 1: If Claude is NOT asking for a tool, we're done.
+        # Hint: if response.stop_reason isn't "tool_use", join the .text of every
+        # text block in response.content, print it, and return it.
 
-        # Rule 1: save Claude's reply to the history
-        messages.append({"role": "assistant", "content": response.content})
+        # TODO 2: Save Claude's reply to the conversation history (Rule 1).
+        # Hint: one line. Append a message with role "assistant".
 
         tool_results = []
         for block in response.content:
@@ -100,7 +98,7 @@ def run_agent(question, client, approve, model=DEFAULT_MODEL, max_turns=MAX_TURN
                 continue
             print(f"Claude wants: {block.name}({json.dumps(block.input)})")
 
-            # Safety: Claude asked for a tool that doesn't exist
+            # Safety: Claude asked for a tool that doesn't exist (provided for you)
             if block.name not in TOOL_FUNCTIONS:
                 tool_results.append({
                     "type": "tool_result", "tool_use_id": block.id,
@@ -108,24 +106,21 @@ def run_agent(question, client, approve, model=DEFAULT_MODEL, max_turns=MAX_TURN
                 })
                 continue
 
-            # HUMAN-IN-THE-LOOP GATE
-            if block.name in REQUIRES_APPROVAL and not approve(block.name, block.input):
-                tool_results.append({
-                    "type": "tool_result", "tool_use_id": block.id,
-                    "content": "A human reviewer declined this action. It was not performed. "
-                    "Do not retry it; explain to the customer that it needs review.", "is_error": True,                })
-                continue
+            # TODO 3: The HUMAN-IN-THE-LOOP GATE. This is mandatory, not optional.
+            # Hint: if block.name is in REQUIRES_APPROVAL and approve(block.name, block.input)
+            # returns False, append this result and then `continue` (don't forget it!):
+            #   {"type": "tool_result", "tool_use_id": block.id,
+            #    "content": "A human reviewer declined this action. It was not performed. "
+            #               "Do not retry it; explain to the customer that it needs review.",
+            #    "is_error": True}
 
-            result = TOOL_FUNCTIONS[block.name](**block.input)
-            print("Result:", result)
-            # Rule 2: label the result with the matching ID
-            tool_results.append({
-                "type": "tool_result", "tool_use_id": block.id,
-                "content": json.dumps(result),
-            })
+            # TODO 4: Run the tool and save the result (Rule 2).
+            # Hint: call TOOL_FUNCTIONS[block.name](**block.input), print the result, then
+            # append {"type": "tool_result", "tool_use_id": block.id,
+            #         "content": json.dumps(result)}
 
-        # Rule 3: send results back as a "user" message
-        messages.append({"role": "user", "content": tool_results})
+        # TODO 5: Send all the tool results back to Claude (Rule 3).
+        # Hint: one line. Append a message with role "user".
 
     print(f"\nOFF SWITCH: stopped after {max_turns} turns without a final answer.")
     return None
